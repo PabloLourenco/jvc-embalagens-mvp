@@ -28,3 +28,4 @@ Arquitetura Monolítica em Camadas (Layered Architecture):
 - [x] Modelagem Simplificada de Banco de Dados e Requisitos
 - [x] Prototipação das 3 Telas Centrais do Fluxo
 - [ ] Validação em Campo com Representante Externo
+- [ ] - Atualização da documentação para fluxo de conferência de NF-e.
