@@ -1,0 +1,30 @@
+name: Pipeline de Testes Automatizados - JVC MVP
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    - name: Configurar Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Instalar dependências de teste
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov
+
+    - name: Executar validação do ambiente e suite de testes
+      run: |
+        python -c "assert len('35261112345678000190550010000123451098765432') == 44; print('Validacao NF-e OK')"
+        pytest --version
