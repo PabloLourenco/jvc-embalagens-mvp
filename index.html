@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JVC Embalagens — Sistema de Conferência e Fluxo de Notas</title>
+  <style>
+    :root {
+      --primary: #0f4c81;
+      --primary-hover: #0a365c;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --success-border: #15803d;
+      --warn-bg: #fef9c3;
+      --warn-text: #854d0e;
+      --warn-border: #ca8a04;
+      --danger-bg: #fee2e2;
+      --danger-text: #991b1b;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+
+    header {
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo-box {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 800;
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+    .brand h1 { margin: 0; font-size: 18px; color: var(--primary); }
+    .brand p { margin: 0; font-size: 12px; color: var(--muted); }
+
+    .user-status { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+    .badge-online {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border: 1px solid var(--success-border);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .badge-role {
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    main { max-width: 1020px; margin: 28px auto; padding: 0 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+      margin-bottom: 20px;
+    }
+    .hidden { display: none !important; }
+
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .step-pill {
+      background: #dbeafe;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .dropzone {
+      border: 2px dashed #94a3b8;
+      border-radius: 10px;
+      padding: 28px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .dropzone:hover { border-color: var(--primary); background: #eff6ff; }
+    .file-chip {
+      display: inline-block;
+      margin-top: 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    label { display: block; font-weight: 700; margin-bottom: 6px; font-size: 14px; }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 14px;
+      border-radius: 8px;
+      margin: 18px 0;
+      font-size: 13px;
+    }
+
+    /* Botões com área de toque acessível >= 44x44px */
+    .btn {
+      min-height: 46px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 2px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; width: 100%; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-secondary { background: #fff; color: var(--text); border-color: var(--border); }
+    .btn-success { background: #15803d; color: #fff; }
+
+    .om-banner {
+      background: #eff6ff;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .lote-tag {
+      background: var(--primary);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th {
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 2px solid var(--border);
+      padding: 10px 8px;
+    }
+    td { padding: 14px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+    tr.row-warn { background: #fefce8; }
+
+    .qty-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .qty-btn {
+      min-width: 44px;
+      min-height: 44px;
+      border: 2px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .qty-btn:hover { background: #e2e8f0; }
+    .qty-input {
+      width: 78px;
+      min-height: 44px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .status-pill {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 13px;
+      display: inline-block;
+      border: 2px solid;
+    }
+    .status-ok { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+    .status-div { background: var(--warn-bg); color: var(--warn-text); border-color: var(--warn-border); }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .kpi small { color: var(--muted); font-weight: 700; font-size: 11px; text-transform: uppercase; }
+    .kpi strong { display: block; font-size: 24px; margin: 6px 0; }
+
+    .alert-box {
+      border: 3px solid var(--warn-border);
+      border-left-width: 10px;
+      background: #fefce8;
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .alert-box.all-ok {
+      border-color: var(--success-border);
+      background: var(--success-bg);
+    }
+    .actions-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo-box">JVC</div>
+    <div>
+      <h1>JVC EMBALAGENS</h1>
+      <p>Sistema de Conferência e Fluxo de Notas</p>
+    </div>
+  </div>
+  <div class="user-status">
+    <span class="badge-online">Online (Rede Local)</span>
+    <span><strong>Carlos Silva</strong> <span class="badge-role">Conferente</span></span>
+  </div>
+</header>
+
+<main>
+  <!-- TELA 1: RECEBIMENTO E IMPORTAÇÃO DE NF-E -->
+  <section id="screen-1" class="card">
+    <div class="step-header">
+      <h2 style="margin:0;font-size:19px;">Recebimento de Mercadorias e Entrada de NF-e</h2>
+      <span class="step-pill">Etapa 1 de 3</span>
+    </div>
+
+    <p style="color:var(--muted);margin-top:0;">
+      Carregue o arquivo XML da NF-e enviado pelo cliente ou informe a chave de acesso numérica de 44 dígitos para abrir a conferência.
+    </p>
+
+    <div class="dropzone" onclick="document.getElementById('xml-file').click()">
+      <div style="font-size:28px;">☁</div>
+      <strong>Clique aqui para carregar o arquivo XML da NF-e</strong>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Ou utilize a remessa padrão carregada abaixo para triagem imediata</div>
+      <div class="file-chip" id="xml-filename">NFe_35261100012345_remessa.xml (Carregado)</div>
+      <input type="file" id="xml-file" accept=".xml" class="hidden" onchange="handleXmlUpload(event)" />
+    </div>
+
+    <div style="margin-top:18px;">
+      <label for="chave-nfe">Chave de Acesso da NF-e (44 dígitos numéricos) *</label>
+      <input type="text" id="chave-nfe" maxlength="44" value="35261112345678000190550010000123451098765432" oninput="validateChave()" />
+      <small id="chave-feedback" style="display:block;margin-top:6px;font-weight:600;color:var(--success-text);">
+        Chave validada: 44/44 dígitos numéricos íntegros.
+      </small>
+    </div>
+
+    <div class="meta-grid">
+      <div><span style="color:var(--muted);">Cliente / Emitente Identificado:</span><br><strong id="meta-emitente">Metalúrgica Aliança Ltda (CNPJ: 12.345.678/0001-90)</strong></div>
+      <div><span style="color:var(--muted);">Nota Fiscal / Série:</span><br><strong id="meta-nf">NF-e 012.345 • Série 1</strong></div>
+      <div><span style="color:var(--muted);">Ordem de Montagem Vinculada:</span><br><strong>OM-2026-Fechadura-Padrão</strong></div>
+    </div>
+
+    <button id="btn-start" class="btn btn-primary" onclick="goToScreen(2)">
+      Carregar Remessa e Iniciar Conferência →
+    </button>
+  </section>
+
+  <!-- TELA 2: BANCADA DE CONFERÊNCIA FÍSICA -->
+  <section id="screen-2" class="card hidden">
+    <div class="om-banner">
+      <div>
+        <span class="lote-tag">LOTE REM-2026-089</span>
+        <strong style="margin-left:8px;">Ordem de Montagem: OM-2026-Fechadura-Padrão</strong>
+      </div>
+      <span class="step-pill">Etapa 2 de 3 • Bancada Física</span>
+    </div>
+
+    <div class="step-header">
+      <div>
+        <h2 style="margin:0;font-size:19px;">Conferência Física de Componentes de Fechaduras</h2>
+        <small style="color:var(--muted);">NF-e nº 012.345 | Emitente: Metalúrgica Aliança Ltda</small>
+      </div>
+      <button class="btn btn-secondary" onclick="goToScreen(1)">← Trocar NF-e</button>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descrição do Componente</th>
+            <th>Qtd. Fiscal</th>
+            <th>Qtd. Física Contada</th>
+            <th>Status / Ação</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="actions-footer">
+      <span style="font-size:13px;color:var(--success-text);font-weight:600;">
+        ✓ Componentes inspecionados pelo operador Carlos Silva.
+      </span>
+      <button class="btn btn-primary" style="width:auto;" onclick="goToScreen(3)">
+        Finalizar Conferência do Lote →
+      </button>
+    </div>
+  </section>
+
+  <!-- TELA 3: GESTÃO DE DIVERGÊNCIAS, ACESSIBILIDADE E EXPEDIÇÃO -->
+  <section id="screen-3" class="hidden">
+    <div class="kpi-grid">
+      <div class="kpi">
+        <small>Total de Itens Inspecionados</small>
+        <strong id="kpi-itens">2 Componentes</strong>
+        <span style="font-size:12px;color:var(--primary);">100% da NF-e processada</span>
+      </div>
+      <div class="kpi">
+        <small>Peças Físicas Aprovadas</small>
+        <strong id="kpi-pecas" style="color:var(--success-text);">740 unidades</strong>
+        <span style="font-size:12px;color:var(--success-text);">Liberadas para linha de montagem</span>
+      </div>
+      <div class="kpi">
+        <small>Divergências Identificadas</small>
+        <strong id="kpi-div" style="color:var(--danger-text);">1 Item (-10 un)</strong>
+        <span id="kpi-div-sub" style="font-size:12px;color:var(--danger-text);">Requer parecer operacional</span>
+      </div>
+    </div>
+
+    <div id="alert-panel" class="alert-box"></div>
+
+    <div class="card">
+      <div class="step-header">
+        <h3 style="margin:0;">Espelho de Conferência de Expedição (Romaneio Pronto)</h3>
+        <span class="badge-online">Apto para Fechamento</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <div>
+          <small style="color:var(--muted);">Cliente Destino da Remessa Montada:</small><br>
+          <strong>Metalúrgica Aliança Ltda</strong><br>
+          <small style="color:var(--muted);">Ordem de Montagem: OM-2026-Fechadura-Padrão</small>
+        </div>
+        <div style="text-align:right;">
+          <small style="color:var(--muted);">Total de Kits Montados Autorizados:</small><br>
+          <strong id="kits-autorizados" style="font-size:22px;color:var(--primary);">240 Conjuntos Prontos</strong>
+        </div>
+      </div>
+
+      <div class="actions-footer">
+        <button class="btn btn-secondary" onclick="goToScreen(2)">← Retornar à Bancada</button>
+        <button class="btn btn-success" onclick="confirmarExpedicao()">✓ Aprovar Lote e Liberar Expedição</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const items = [
+    { codigo: 'ESP-01', nome: 'Espelho Fechadura Inox 40mm', detalhe: 'Acabamento polido • Caixa fechada', fiscal: 500, fisica: 500 },
+    { codigo: 'MAC-09', nome: 'Maçaneta Alavanca Zamac', detalhe: 'Par de maçanetas cromadas • Caixa 04', fiscal: 250, fisica: 240 }
+  ];
+
+  function validateChave() {
+    const val = document.getElementById('chave-nfe').value.replace(/\D/g, '');
+    document.getElementById('chave-nfe').value = val;
+    const fb = document.getElementById('chave-feedback');
+    const btn = document.getElementById('btn-start');
+    if (/^\d{44}$/.test(val)) {
+      fb.textContent = 'Chave validada: 44/44 dígitos numéricos íntegros.';
+      fb.style.color = 'var(--success-text)';
+      btn.disabled = false;
+    } else {
+      fb.textContent = `Atenção: informe exatamente 44 dígitos (${val.length}/44 preenchidos).`;
+      fb.style.color = 'var(--danger-text)';
+      btn.disabled = true;
+    }
+  }
+
+  function handleXmlUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    document.getElementById('xml-filename').textContent = `${file.name} (Importado)`;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const xml = new DOMParser().parseFromString(e.target.result, 'text/xml');
+      const emit = xml.querySelector('emit > xNome');
+      const nNF = xml.querySelector('ide > nNF');
+      if (emit) document.getElementById('meta-emitente').textContent = emit.textContent;
+      if (nNF) document.getElementById('meta-nf').textContent = `NF-e ${nNF.textContent}`;
+    };
+    reader.readAsText(file);
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('items-tbody');
+    tbody.innerHTML = '';
+    items.forEach((item, idx) => {
+      const diff = item.fisica - item.fiscal;
+      const isOk = diff === 0;
+      const tr = document.createElement('tr');
+      if (!isOk) tr.className = 'row-warn';
+
+      tr.innerHTML = `
+        <td><strong>${item.codigo}</strong></td>
+        <td><strong>${item.nome}</strong><br><small style="color:var(--muted);">${item.detalhe}</small></td>
+        <td><strong>${item.fiscal} un</strong></td>
+        <td>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="updateQty(${idx}, -10)">-10</button>
+            <button class="qty-btn" onclick="updateQty(${idx}, -1)">-</button>
+            <input class="qty-input" type="number" min="0" value="${item.fisica}" onchange="setQty(${idx}, this.value)" />
+            <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
+            <button class="qty-btn" onclick="updateQty(${idx}, 10)">+10</button>
+            <button class="qty-btn" onclick="updateQty(${idx}, 50)">+50</button>
+          </div>
+        </td>
+        <td>
+          <span class="status-pill ${isOk ? 'status-ok' : 'status-div'}">
+            ${isOk ? '[✓ CONFERIDO OK]' : `[! DIVERGÊNCIA (${diff > 0 ? '+' + diff : diff})]`}
+          </span>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateQty(idx, delta) {
+    items[idx].fisica = Math.max(0, items[idx].fisica + delta);
+    renderTable();
+  }
+
+  function setQty(idx, val) {
+    const num = parseInt(val, 10);
+    items[idx].fisica = isNaN(num) || num < 0 ? 0 : num;
+    renderTable();
+  }
+
+  function renderSummary() {
+    const totalPecas = items.reduce((acc, i) => acc + i.fisica, 0);
+    const divergentes = items.filter(i => i.fisica !== i.fiscal);
+    const minKits = Math.min(...items.map(i => i.fisica));
+
+    document.getElementById('kpi-pecas').textContent = `${totalPecas} unidades`;
+    document.getElementById('kits-autorizados').textContent = `${minKits} Conjuntos Prontos`;
+
+    const panel = document.getElementById('alert-panel');
+    panel.innerHTML = '';
+
+    if (divergentes.length === 0) {
+      panel.className = 'alert-box all-ok';
+      document.getElementById('kpi-div').textContent = '0 Divergências';
+      document.getElementById('kpi-div').style.color = 'var(--success-text)';
+      document.getElementById('kpi-div-sub').textContent = '100% conforme nota fiscal';
+      const title = document.createElement('strong');
+      title.textContent = '[✓] CONFERÊNCIA CONCLUÍDA SEM DIVERGÊNCIAS — LOTE REM-2026-089';
+      panel.appendChild(title);
+    } else {
+      panel.className = 'alert-box';
+      const d = divergentes[0];
+      const delta = d.fisica - d.fiscal;
+      document.getElementById('kpi-div').textContent = `${divergentes.length} Item (${delta} un)`;
+      document.getElementById('kpi-div').style.color = 'var(--danger-text)';
+      document.getElementById('kpi-div-sub').textContent = 'Requer aprovação de supervisão';
+
+      const title = document.createElement('strong');
+      title.style.fontSize = '16px';
+      title.textContent = `[!] ALERTA DE DIVERGÊNCIA OPERACIONAL DETECTADA — LOTE REM-2026-089`;
+
+      const desc = document.createElement('p');
+      desc.textContent = `Componente ${d.codigo}: Faturado ${d.fiscal} un | Recebido Físico: ${d.fisica} un (Diferença de ${delta} unidades).`;
+
+      const lbl = document.createElement('label');
+      lbl.textContent = 'Justificativa Operacional do Supervisor de Linha *';
+
+      const txt = document.createElement('textarea');
+      txt.rows = 2;
+      txt.value = 'Caixa 04 recebida avariada do fornecedor; falta comunicada ao cliente industrial e registrada no romaneio.';
+
+      panel.append(title, desc, lbl, txt);
+    }
+  }
+
+  function goToScreen(num) {
+    ['screen-1', 'screen-2', 'screen-3'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById(`screen-${num}`).classList.remove('hidden');
+    if (num === 2) renderTable();
+    if (num === 3) renderSummary();
+  }
+
+  function confirmarExpedicao() {
+    alert('Espelho de Conferência registrado com sucesso! Lote REM-2026-089 liberado para expedição.');
+  }
+</script>
+</body>
+</html>
